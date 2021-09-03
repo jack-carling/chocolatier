@@ -1,26 +1,43 @@
 <script lang="ts">
+  import Welcome from './lib/Welcome.svelte';
+
+  let showWelcome = true;
+
+  function hideWelcome() {
+    showWelcome = false;
+  }
 </script>
 
 <main>
   <h1>Chocolatier</h1>
+  {#if showWelcome}
+    <Welcome on:getStarted={hideWelcome} />
+  {/if}
 </main>
 
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;400&display=swap');
+
   :root {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: #ffe8d6;
+    color: #7f5539;
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 100;
   }
   main {
-    width: 100vw;
-    height: 100vh;
-    padding: 1rem;
-    margin: 0;
+    padding: 2rem;
   }
   h1 {
-    color: #ff3e00;
     text-align: center;
     text-transform: uppercase;
     font-size: 4rem;
     font-weight: 100;
+    margin: 2rem 0;
+  }
+
+  @media screen and (max-width: 600px) {
+    h1 {
+      font-size: 2rem;
+    }
   }
 </style>
