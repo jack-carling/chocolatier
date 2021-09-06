@@ -1,12 +1,3 @@
-<script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-
-  const dispatch = createEventDispatcher();
-  function handleClick() {
-    dispatch('getStarted');
-  }
-</script>
-
 <section>
   INTRODUCTION TO GANACHE BALANCING – CHEF RUSS THAYER
   <br /><br />
@@ -27,7 +18,7 @@
   That’s Balancing!
 
   <div>
-    <button on:click={handleClick}>Get started</button>
+    <button on:click>Get started</button>
   </div>
 </section>
 

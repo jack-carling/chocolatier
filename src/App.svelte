@@ -1,5 +1,6 @@
 <script lang="ts">
   import Welcome from './lib/Welcome.svelte';
+  import Main from './lib/Main.svelte';
 
   let showWelcome = true;
 
@@ -11,7 +12,9 @@
 <main>
   <h1>Chocolatier</h1>
   {#if showWelcome}
-    <Welcome on:getStarted={hideWelcome} />
+    <Welcome on:click={hideWelcome} />
+  {:else}
+    <Main />
   {/if}
 </main>
 
