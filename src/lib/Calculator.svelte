@@ -1,14 +1,9 @@
 <script lang="ts">
   import data from '../utils/data';
+  import type { IngredientsData } from '../utils/interfaces';
+  import { createEventDispatcher, tick, onMount } from 'svelte';
 
-  interface IngredientsData {
-    amount: number;
-    cocoaFatContent: number;
-    dairyFatContent: number;
-    name: string;
-    sugarContent: number;
-    waterContent: number;
-  }
+  const dispatch = createEventDispatcher();
 
   let ingredients: IngredientsData[] = [];
 
@@ -17,9 +12,10 @@
   $: totalAmount = ingredients.reduce((total, ingredient) => {
     return ingredient.amount + total;
   }, 0);
+
   $: percentages = ingredients.map((ingredient) => {
     const percent = (ingredient.amount / totalAmount) * 100;
-    if (isNaN(percent)) return '---';
+    if (isNaN(percent)) return '0.00';
     return percent.toFixed(2);
   });
 
@@ -39,13 +35,37 @@
       if (ingredient) break;
     }
     ingredients = [...ingredients, { ...ingredient, amount: 0 }];
-    console.log(ingredients);
   }
 
   function removeIngredient(index: number) {
     ingredients.splice(index, 1);
     ingredients = ingredients;
   }
+
+  async function dispatchIngredients() {
+    await tick();
+    const payload = ingredients.map((ingredient, index) => {
+      return { ...ingredient, percentage: percentages[index] };
+    });
+    dispatch('ingredients', payload);
+  }
+
+  onMount(() => {
+    let ingredient: IngredientsData;
+    ingredient = data.dairy.find((i: IngredientsData) => i.name === 'Cream 36%');
+    ingredients = [...ingredients, { ...ingredient, amount: 350 }];
+    ingredient = data.sugars.find((i: IngredientsData) => i.name === 'Glucose');
+    ingredients = [...ingredients, { ...ingredient, amount: 115 }];
+    ingredient = data.sugars.find((i: IngredientsData) => i.name === 'Inverted sugar');
+    ingredients = [...ingredients, { ...ingredient, amount: 115 }];
+    ingredient = data.fats.find((i: IngredientsData) => i.name === 'Clarified butter');
+    ingredients = [...ingredients, { ...ingredient, amount: 50 }];
+    ingredient = data.chocolate.find((i: IngredientsData) => i.name === 'Callebaut 811 - 54,5%');
+    ingredients = [...ingredients, { ...ingredient, amount: 650 }];
+    ingredient = data.fats.find((i: IngredientsData) => i.name === 'Cocoa butter');
+    ingredients = [...ingredients, { ...ingredient, amount: 20 }];
+    dispatchIngredients();
+  });
 </script>
 
 <section>
@@ -74,6 +94,11 @@
             <option value={name}>{name}</option>
           {/each}
         </optgroup>
+        <optgroup label="Chocolates">
+          {#each data.chocolate as { name }}
+            <option value={name}>{name}</option>
+          {/each}
+        </optgroup>
         <optgroup label="Alcohols">
           {#each data.alcohol as { name }}
             <option value={name}>{name}</option>
@@ -83,36 +108,52 @@
     </div>
     <i class="material-icons" on:click={addIngredient}>add_circle_outline</i>
   </div>
-  <table>
-    <tr>
-      <td class="header">Ingredient</td>
-      <td class="header">Amount (g)</td>
-      <td class="header">%</td>
-      <td class="header">Remove</td>
-    </tr>
-    {#each ingredients as { name, amount }, i}
+  {#if ingredients.length}
+    <table>
       <tr>
-        <td>{name}</td>
-        <td>
-          <input maxlength="7" type="text" bind:value={amount} on:input={() => (amount = setAmount(amount))} />
-        </td>
-        <td>
-          {percentages[i]}
-        </td>
-        <td class="remove">
-          <div>
-            <i class="material-icons" on:click={() => removeIngredient(i)}>remove_circle_outline</i>
-          </div>
-        </td>
+        <td class="header">Ingredient</td>
+        <td class="header">Amount (g)</td>
+        <td class="header">%</td>
+        <td class="header">Remove</td>
       </tr>
-    {/each}
-    <tr>
-      <td class="header">Total</td>
-      <td>{totalAmount}</td>
-      <td>100.00</td>
-      <td />
-    </tr>
-  </table>
+      {#each ingredients as { name, amount }, i}
+        <tr>
+          <td>{name}</td>
+          <td>
+            <input
+              maxlength="7"
+              type="text"
+              bind:value={amount}
+              on:input={() => {
+                amount = setAmount(amount);
+                dispatchIngredients();
+              }}
+            />
+          </td>
+          <td>
+            {percentages[i]}
+          </td>
+          <td class="remove">
+            <div>
+              <i
+                class="material-icons"
+                on:click={() => {
+                  removeIngredient(i);
+                  dispatchIngredients();
+                }}>remove_circle_outline</i
+              >
+            </div>
+          </td>
+        </tr>
+      {/each}
+      <tr>
+        <td class="header">Total</td>
+        <td>{totalAmount}</td>
+        <td>100.00</td>
+        <td />
+      </tr>
+    </table>
+  {/if}
 </section>
 
 <style>
@@ -122,7 +163,7 @@
   table,
   tr,
   td {
-    border: 1px solid black;
+    border: 1px solid #7f5539;
     border-collapse: collapse;
   }
   td {

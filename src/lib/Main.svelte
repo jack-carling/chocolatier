@@ -1,11 +1,19 @@
 <script lang="ts">
   import Calculator from './Calculator.svelte';
   import Graph from './Graph.svelte';
+
+  import type { IngredientsData } from '../utils/interfaces';
+
+  let ingredients: IngredientsData[] = [];
+
+  function setIngredients(event: CustomEvent) {
+    ingredients = event.detail;
+  }
 </script>
 
 <main>
-  <Calculator />
-  <Graph />
+  <Calculator on:ingredients={setIngredients} />
+  <Graph {ingredients} />
 </main>
 
 <style>
